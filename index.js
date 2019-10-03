@@ -1,39 +1,33 @@
-import React, {useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import api from '../../services/api';
 
-export default function Login({ history }){
-    const[email, setEmail] = useState('');
+export default function Dashboard(){
+    const [spots, setSpots] = useState([]);
 
-    async function handleSubmit(event){
-      event.preventDefault();
-  
-      const response = await api.post('/sessions', { email });
-  
-      const { _id } = response.data;
-  
-      localStorage.setItem('user', _id);
+    useEffect(() => {
+        async function loadSpots(){
+            const user_id = localStorage.getItem('user');
+            const response = await api.get('/dashboard', {
+                headers: { user_id }
+            });
 
-      history.push('/dashboard');
-    }
-
+            setSpots(response.data);
+            console.log(response.data);
+        }
+        
+        loadSpots();
+    }, []);
     return (
         <>
-        <p>
-          Ofereça <strong>spots</strong> para programadores e encontre <strong>talentos</strong> para sua empresa
-        </p>
-
-        <form onSubmit = {handleSubmit}>
-          <label htmlFor="email">E-MAIL*</label>
-          <input
-          type="email"
-          id="email"
-          placeholder="Seu melhor email"
-          value={email}
-          onChange={event => setEmail(event.target.value)}>
-          </input>
-
-          <button className= "btn" type="submit">Entrar</button>
-        </form>
+        <ul className ="spot--list">
+            {spots.map(spot=>(
+                <li>
+                    <header/>
+                    <strong>{spot.company}</strong>
+                    <span>{spot.price}</span>
+                </li>
+            ))}
+        </ul>
         </>
     )
 }
